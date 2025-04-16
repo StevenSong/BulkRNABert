@@ -67,7 +67,7 @@ class BulkRNABertConfig(BaseModel):
             values["key_size"] = embed_dim // num_attention_heads
         return values
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     @classmethod
     def validate_gene_embedding(cls, values: dict[str, Any]) -> dict[str, Any]:
         """
