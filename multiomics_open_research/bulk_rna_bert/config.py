@@ -47,7 +47,7 @@ class BulkRNABertConfig(BaseModel):
     use_max_normalization: bool = True
     normalization_factor: float | None = None
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     @classmethod
     def validate_key_size(cls, values: dict[str, Any]) -> dict[str, Any]:
         """
