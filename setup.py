@@ -21,7 +21,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "click>=8.1.7",
-        "jax>=0.4.19",
+        "jax[cuda12]>=0.4.19,<0.6.0",
         "jaxlib>=0.4.19",
         "dm-haiku>=0.0.10",
         "joblib>=1.3.2",
@@ -29,6 +29,7 @@ setup(
         "pandas>=2.2.0",
         "pydantic>=1.10.5",
         "torch>=2.2.0",
+        "tqdm",
     ],
     dependency_links=[
         "https://storage.googleapis.com/jax-releases/jax_releases.html",

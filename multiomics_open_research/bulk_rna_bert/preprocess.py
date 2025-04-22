@@ -13,11 +13,13 @@
 # limitations under the License.
 
 import logging
+import os
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from multiomics_open_research.bulk_rna_bert.config import BulkRNABertConfig
 
@@ -87,15 +89,15 @@ def get_gene_id_from_common_gene_ids(
 
 def preprocess_tcga_rna_seq_dataset(
     dataset_path: Path,
-    output_file: Path,
+    output_file: Path | None,
     reference_gene_ids: list[str],
     rna_seq_column: str,
-) -> None:
+) -> pd.DataFrame:
     files = get_all_tcga_dataset_files(dataset_path)
     preprocessed_rows = []
-    preprocessed_df_columns = reference_gene_ids + ["identifier"]
+    preprocessed_df_columns = reference_gene_ids + ["identifier", "case_id"]
     identifiers: dict[str, int] = defaultdict(int)
-    for file in files:
+    for file in tqdm(files):
         try:
             df = read_tcga_dataframe(file)
             reference_gene_ids_with_versions = get_gene_id_from_common_gene_ids(
@@ -129,13 +131,18 @@ def preprocess_tcga_rna_seq_dataset(
                 if identifier in identifiers:
                     identifier = identifier + f"-{identifiers[identifier]+1}"
                 identifiers[identifier] += 1
+                case_id = os.path.basename(os.path.dirname(file))
 
-                preprocessed_rows.append(df[rna_seq_column].to_list() + [identifier])
+                preprocessed_rows.append(
+                    df[rna_seq_column].to_list() + [identifier, case_id]
+                )
         except Exception as e:
             logging.error(f"Error of file {file}: " + str(e))
 
     df_preprocessed = pd.DataFrame(preprocessed_rows, columns=preprocessed_df_columns)
-    df_preprocessed.to_csv(output_file, index=False)
+    if output_file is not None:
+        df_preprocessed.to_csv(output_file, index=False)
+    return df_preprocessed
 
 
 def preprocess_rna_seq_for_bulkrnabert(
